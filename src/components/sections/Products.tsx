@@ -72,11 +72,11 @@ export function Products() {
               aria-controls={`panel-${cat.id}`}
               id={`tab-${cat.id}`}
               className={clsx(
-                'px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
+                'px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 active:scale-95',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2',
                 activeCategory === cat.id
                   ? 'bg-green-primary text-white shadow-md'
-                  : 'bg-white text-green-700 border border-green-200 hover:border-green-300 hover:shadow-sm hover:bg-green-50'
+                  : 'bg-white text-green-700 border border-green-200 hover:border-green-300 hover:shadow-sm hover:bg-green-50 hover:-translate-y-0.5'
               )}
             >
               <span className="flex items-center gap-2">
@@ -174,26 +174,31 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: isInView ? 0.1 + index * 0.05 : 0, duration: 0.4 }}
-      whileHover={{ y: -6, boxShadow: '0 24px 48px -12px rgb(0 0 0 / 0.12)' }}
-      className="group"
+      initial={{ opacity: 0, y: 22, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay: Math.min(index * 0.05, 0.3), duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+      whileHover={{ y: -6 }}
+      whileTap={{ scale: 0.99 }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      className="group will-change-transform"
     >
-      <Card variant="product" padding="none" hover className="h-full flex flex-col overflow-hidden">
+      <Card variant="product" padding="none" className="h-full flex flex-col overflow-hidden transition-shadow duration-300 group-hover:shadow-[0_24px_48px_-12px_rgb(0_0_0/0.14)] group-hover:border-green-200">
         <div className="relative aspect-square overflow-hidden bg-green-pale">
           <div
-            className={clsx(
-              'absolute inset-0 bg-gradient-to-br from-green-100/50 to-amber-100/50 transition-transform duration-500',
-              hovered ? 'scale-110' : 'scale-100'
-            )}
+            className="absolute inset-0 bg-gradient-to-br from-green-100/50 to-amber-100/50 transition-transform duration-500 ease-out group-hover:scale-110"
             aria-hidden="true"
           />
-          <div className="relative z-10 h-full flex items-center justify-center p-6">
-            <span className="text-6xl" aria-hidden="true" role="img" aria-label={product.name}>
+          <motion.div
+            className="relative z-10 h-full flex items-center justify-center p-6"
+            animate={hovered ? { y: -8, rotate: -4, scale: 1.1 } : { y: 0, rotate: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+          >
+            <span className="text-6xl drop-shadow-sm" aria-hidden="true" role="img" aria-label={product.name}>
               {getProductEmoji(product.category)}
             </span>
-          </div>
+          </motion.div>
           <div className="absolute top-3 right-3">
             <span className={clsx(
               'px-2 py-1 rounded-full text-xs font-medium transition-all duration-300',
@@ -227,8 +232,8 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
             <Button
               size="sm"
               variant="outline"
-              leftIcon={<Plus className="w-4 h-4" />}
-              className="opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0"
+              leftIcon={<Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />}
+              className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition-all duration-300 sm:translate-x-2 sm:group-hover:translate-x-0"
               aria-label={`Add ${product.name} to kit`}
             >
               Add

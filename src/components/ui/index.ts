@@ -5,3 +5,4 @@ export { Badge, Avatar, Separator, Label, type BadgeProps, type AvatarProps, typ
 export { Modal, ConfirmModal, AlertModal, type ModalProps, type ConfirmModalProps, type AlertModalProps } from './Modal';
 export { ToastProvider, useToast, type Toast } from './Toast';
 export { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';
+export { OrganicBackdrop } from './OrganicBackdrop';

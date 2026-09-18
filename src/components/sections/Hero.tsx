@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui';
 import { ArrowRight, Sparkles, Leaf, Droplets, Sun, Shield, CheckCircle } from 'lucide-react';
 
@@ -20,25 +21,33 @@ const floatingElements = [
   { type: 'sprout', x: 95, y: 75, size: 13, delay: 0.5 },
 ];
 
-function FloatingElement({ type, x, y, size, delay }: { type: string; x: number; y: number; size: number; delay: number }) {
+function FloatingElement({ type, x, y, size, delay, reduce, hideOnMobile }: { type: string; x: number; y: number; size: number; delay: number; reduce: boolean; hideOnMobile?: boolean }) {
   const emoji = type === 'seed' ? '🌰' : type === 'leaf' ? '🌿' : '🌱';
   return (
     <motion.div
-      className="absolute pointer-events-none"
+      className={hideOnMobile ? 'absolute pointer-events-none hidden sm:block' : 'absolute pointer-events-none'}
       style={{ left: `${x}%`, top: `${y}%` }}
-      initial={{ opacity: 0, scale: 0.5, rotate: -15 }}
-      animate={{ 
-        opacity: [0.4, 0.7, 0.4], 
-        scale: [1, 1.1, 1], 
-        rotate: [-15, 10, -15],
-        y: [0, -20, 0]
-      }}
-      transition={{ 
-        duration: 8, 
-        repeat: Infinity, 
-        delay,
-        ease: 'easeInOut'
-      }}
+      initial={reduce ? { opacity: 0.45 } : { opacity: 0, scale: 0.5, rotate: -15 }}
+      animate={
+        reduce
+          ? { opacity: 0.45 }
+          : {
+              opacity: [0.4, 0.7, 0.4],
+              scale: [1, 1.1, 1],
+              rotate: [-15, 10, -15],
+              y: [0, -20, 0],
+            }
+      }
+      transition={
+        reduce
+          ? { duration: 0.3 }
+          : {
+              duration: 8,
+              repeat: Infinity,
+              delay,
+              ease: 'easeInOut',
+            }
+      }
       aria-hidden="true"
     >
       <span style={{ fontSize: `${size}px` }}>{emoji}</span>
@@ -47,19 +56,25 @@ function FloatingElement({ type, x, y, size, delay }: { type: string; x: number;
 }
 
 export function Hero() {
+  const ref = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
+  const bgY = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const visualY = useTransform(scrollYProgress, [0, 1], [0, -46]);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-green-pale/50 via-white to-green-pale/30">
-      {/* Ambient background glow */}
-      <div className="absolute inset-0" aria-hidden="true">
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-green-pale/50 via-white to-green-pale/30">
+      {/* Ambient background glow — subtle parallax, transform only */}
+      <motion.div className="absolute inset-0" aria-hidden="true" style={reduce ? undefined : { y: bgY }}>
         <div className="absolute top-1/4 left-1/4 w-[384px] h-[384px] bg-green-leaf/15 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-1/4 right-1/4 w-[384px] h-[384px] bg-amber-warm/15 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[288px] h-[288px] bg-green-emerald/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }} />
-      </div>
+      </motion.div>
 
       {/* Floating organic elements */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         {floatingElements.map((el, i) => (
-          <FloatingElement key={i} {...el} />
+          <FloatingElement key={i} {...el} reduce={!!reduce} hideOnMobile={i > 2} />
         ))}
       </div>
 
@@ -136,10 +151,10 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right: Visual */}
-          <div className="relative">
+          {/* Right: Visual — gentle parallax on scroll */}
+          <motion.div className="relative" style={reduce ? undefined : { y: visualY }}>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4, duration: 1, type: 'spring', stiffness: 120, damping: 18 }}
               className="relative aspect-square max-w-lg mx-auto"
@@ -241,14 +256,14 @@ export function Hero() {
                     <motion.div
                       key={i}
                       className="w-2 h-2 rounded-full bg-green-300"
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.4, 1, 0.4] }}
-                      transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.2 }}
+                      animate={reduce ? { opacity: 0.7 } : { scale: [1, 1.2, 1], opacity: [0.4, 1, 0.4] }}
+                      transition={reduce ? { duration: 0.3 } : { duration: 1.8, repeat: Infinity, delay: i * 0.2 }}
                     />
                   ))}
                 </motion.div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
 

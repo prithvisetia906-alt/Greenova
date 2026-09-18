@@ -1,38 +1,49 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useRef, ReactNode } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
   delay?: number;
   duration?: number;
-  direction?: 'up' | 'down' | 'left' | 'right';
+  direction?: 'up' | 'down' | 'left' | 'right' | 'none';
   distance?: number;
   once?: boolean;
-  margin?: string;
+  margin?: any;
   className?: string;
+  scale?: number;
+  triggerOnce?: boolean;
 }
+
+const EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
 
 export function ScrollReveal({
   children,
   delay = 0,
-  duration = 0.6,
+  duration = 0.55,
   direction = 'up',
-  distance = 30,
+  distance = 28,
   once = true,
-  margin = '-100px',
+  margin = '-80px',
   className = '',
+  scale,
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, margin: margin as any });
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return <div ref={ref} className={className}>{children}</div>;
+  }
 
   const getInitial = () => {
+    const base: Record<string, number> = { opacity: 0 };
     switch (direction) {
-      case 'up': return { opacity: 0, y: distance };
-      case 'down': return { opacity: 0, y: -distance };
-      case 'left': return { opacity: 0, x: distance };
-      case 'right': return { opacity: 0, x: -distance };
+      case 'up': return { ...base, y: distance };
+      case 'down': return { ...base, y: -distance };
+      case 'left': return { ...base, x: distance };
+      case 'right': return { ...base, x: -distance };
+      case 'none': return scale ? { ...base, scale } : base;
     }
   };
 
@@ -40,12 +51,9 @@ export function ScrollReveal({
     <motion.div
       ref={ref}
       initial={getInitial()}
-      animate={isInView ? { opacity: 1, x: 0, y: 0 } : getInitial()}
-      transition={{ 
-        duration, 
-        delay, 
-        ease: [0.25, 0.46, 0.45, 0.94] 
-      }}
+      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      viewport={{ once, margin }}
+      transition={{ duration, delay, ease: EASE }}
       className={className}
     >
       {children}
@@ -58,30 +66,31 @@ interface StaggerContainerProps {
   delayChildren?: number;
   staggerDelay?: number;
   className?: string;
+  direction?: 'vertical' | 'horizontal';
 }
 
 export function StaggerContainer({
   children,
-  delayChildren = 0.1,
-  staggerDelay = 0.08,
+  delayChildren = 0.05,
+  staggerDelay = 0.07,
   className = '',
 }: StaggerContainerProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <motion.div
-      ref={ref}
       initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      whileInView="visible"
+      viewport={{ once: true, margin: '-60px' }}
       variants={{
         hidden: { opacity: 0 },
         visible: {
           opacity: 1,
-          transition: {
-            staggerChildren: staggerDelay,
-            delayChildren,
-          },
+          transition: { staggerChildren: staggerDelay, delayChildren },
         },
       }}
       className={className}
@@ -104,19 +113,22 @@ export function StaggerItem({
   className = '',
   variants,
 }: StaggerItemProps) {
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       className={className}
       variants={{
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 0, y: 18, scale: 0.99 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: {
-            duration: 0.5,
-            delay,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          },
+          scale: 1,
+          transition: { duration: 0.45, delay, ease: EASE },
         },
         ...variants,
       }}
