@@ -461,6 +461,66 @@ export function getProductById(id: string): Product | undefined {
   return products.find(p => p.id === id);
 }
 
+export interface KitLineItem {
+  product: Product;
+  /** Effective quantity applied from the kit-size multiplier (1 for accessories). */
+  quantity: number;
+  /** Unit price before the kit-size multiplier. */
+  unitPrice: number;
+  /** Final line total (unitPrice * quantity, rounded). */
+  lineTotal: number;
+}
+
+export function getKitSizeMultiplier(kitSize: string): number {
+  return kitSizes.find(k => k.id === kitSize)?.multiplier || 1;
+}
+
+/**
+ * Single source of truth for kit pricing.
+ * Seeds, soil, fertilizer and pest protection scale with the kit-size
+ * multiplier; accessories are one-time additions at unit price.
+ * Unknown product ids are ignored so totals can never become NaN.
+ */
+export function getKitLineItems(config: {
+  seeds: string[];
+  soil: string | null;
+  fertilizer: string | null;
+  pestProtection: string | null;
+  accessories: string[];
+  kitSize: string;
+}): KitLineItem[] {
+  const multiplier = getKitSizeMultiplier(config.kitSize);
+  const items: KitLineItem[] = [];
+
+  const pushScaled = (id: string | null) => {
+    if (!id) return;
+    const product = getProductById(id);
+    if (product) items.push({
+      product,
+      quantity: multiplier,
+      unitPrice: product.price,
+      lineTotal: Math.round(product.price * multiplier),
+    });
+  };
+
+  config.seeds.forEach(id => pushScaled(id));
+  pushScaled(config.soil);
+  pushScaled(config.fertilizer);
+  pushScaled(config.pestProtection);
+
+  config.accessories.forEach(id => {
+    const product = getProductById(id);
+    if (product) items.push({
+      product,
+      quantity: 1,
+      unitPrice: product.price,
+      lineTotal: product.price,
+    });
+  });
+
+  return items;
+}
+
 export function calculateKitPrice(config: {
   seeds: string[];
   soil: string | null;
@@ -469,34 +529,9 @@ export function calculateKitPrice(config: {
   accessories: string[];
   kitSize: string;
 }): number {
-  let total = 0;
-  const kitSizeOption = kitSizes.find(k => k.id === config.kitSize);
-  const multiplier = kitSizeOption?.multiplier || 1;
+  return getKitLineItems(config).reduce((sum, item) => sum + item.lineTotal, 0);
+}
 
-  config.seeds.forEach(id => {
-    const product = getProductById(id);
-    if (product) total += product.price * multiplier;
-  });
-
-  if (config.soil) {
-    const product = getProductById(config.soil);
-    if (product) total += product.price * multiplier;
-  }
-
-  if (config.fertilizer) {
-    const product = getProductById(config.fertilizer);
-    if (product) total += product.price * multiplier;
-  }
-
-  if (config.pestProtection) {
-    const product = getProductById(config.pestProtection);
-    if (product) total += product.price * multiplier;
-  }
-
-  config.accessories.forEach(id => {
-    const product = getProductById(id);
-    if (product) total += product.price;
-  });
-
-  return Math.round(total);
+export function formatINR(amount: number): string {
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }

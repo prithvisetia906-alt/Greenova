@@ -3,11 +3,9 @@
 import { motion } from 'framer-motion';
 import { useKitBuilder, getProductsByCategory } from './KitBuilderContext';
 import { Product } from '@/types';
-import { Card } from '@/components/ui';
-import { Check, Plus, Minus, Leaf, Droplets, Shield, Sun, Sparkles } from 'lucide-react';
+import { Check, Minus, Leaf, Droplets, Shield, Sun, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
-import Image from 'next/image';
-import { getProductById } from '@/data/products';
+import { getProductById, getKitSizeMultiplier, formatINR } from '@/data/products';
 
 const categoryIcons = {
   seeds: Leaf,
@@ -17,127 +15,184 @@ const categoryIcons = {
   accessories: Sparkles,
 };
 
+const categoryEyebrow: Record<Product['category'], string> = {
+  seeds: 'Seeds',
+  soil: 'Soil · Growing Medium',
+  fertilizer: 'Nutrition · Fertilizer',
+  'pest-protection': 'Plant Protection',
+  accessories: 'Accessory',
+};
+
+const categoryTile: Record<Product['category'], string> = {
+  seeds: 'from-green-500 to-green-600',
+  soil: 'from-amber-500 to-amber-600',
+  fertilizer: 'from-emerald-500 to-emerald-600',
+  'pest-protection': 'from-lime-500 to-lime-600',
+  accessories: 'from-teal-500 to-teal-600',
+};
+
 const categoryLabels = {
   seeds: 'What do you want to grow?',
   soil: 'Choose your soil',
   fertilizer: 'Choose nutrition',
   'pest-protection': 'Choose natural pest protection',
-  accessories: 'Add accessories (optional)',
+  accessories: 'Add helpful accessories',
 };
 
 const categoryDescriptions = {
-  seeds: 'Select the seeds you\'d like to grow. You can choose multiple varieties.',
+  seeds: 'Select the seeds you\u2019d like to grow. You can choose multiple varieties.',
   soil: 'Pick the growing medium that suits your plants and space.',
   fertilizer: 'Add organic nutrients for healthy, productive plants.',
   'pest-protection': 'Protect your plants naturally with botanical solutions.',
-  accessories: 'Helpful tools to make growing easier and more enjoyable.',
+  accessories: 'Optional tools that make growing easier. Add as many as you like.',
 };
 
-interface ProductCardProps {
+const EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+
+interface KitProductCardProps {
   product: Product;
   isSelected: boolean;
   onClick: () => void;
-  multiple?: boolean;
-  showPrice?: boolean;
+  /** Position in the grid, used for staggered entrance. */
+  index?: number;
+  /** Show the kit-size-adjusted price instead of the unit price. */
+  effectivePrice?: number | null;
+  quantityNote?: string | null;
 }
 
-function ProductCard({ product, isSelected, onClick, multiple = false, showPrice = true }: ProductCardProps) {
+function KitProductCard({ product, isSelected, onClick, index = 0, effectivePrice = null, quantityNote = null }: KitProductCardProps) {
   const Icon = categoryIcons[product.category as keyof typeof categoryIcons] || Leaf;
 
   return (
     <motion.button
       onClick={onClick}
+      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: Math.min(index * 0.05, 0.35), duration: 0.4, ease: EASE }}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.98 }}
+      aria-pressed={isSelected}
       className={clsx(
-        'relative w-full p-4 rounded-xl border-2 transition-all duration-300',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500',
+        'group relative w-full rounded-2xl border-2 p-4 text-left transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2',
         isSelected
           ? 'border-green-500 bg-green-50 shadow-md'
           : 'border-green-100 bg-white hover:border-green-300 hover:shadow-lg'
       )}
-      whileHover={{ y: -2, scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      aria-pressed={isSelected}
     >
-      <div className="flex items-start gap-4">
-        <div className={clsx(
-          'w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0',
-          isSelected ? 'bg-green-100' : 'bg-green-50'
-        )}>
-          <Icon className={clsx('w-7 h-7', isSelected ? 'text-green-600' : 'text-green-400')} aria-hidden="true" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-green-900 truncate">{product.name}</h4>
-          <p className="mt-1 text-sm text-green-600 line-clamp-2">{product.description}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {product.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className={clsx(
-                  'px-2 py-0.5 text-xs rounded-full',
-                  isSelected ? 'bg-green-100 text-green-700' : 'bg-green-50 text-green-600'
-                )}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {showPrice && (
-            <span className={clsx('font-semibold text-green-800', isSelected && 'text-green-600')}>
-              ₹{product.price}
-            </span>
+      {/* Category eyebrow */}
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-green-500">
+        {categoryEyebrow[product.category]}
+      </p>
+
+      <div className="mt-2 flex items-start gap-3">
+        <motion.span
+          animate={isSelected ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+          transition={{ duration: 0.35 }}
+          className={clsx(
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm',
+            categoryTile[product.category]
           )}
-          <motion.div
-            className={clsx(
-              'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
-              isSelected ? 'bg-green-500 border-green-500' : 'border-green-300 bg-white'
-            )}
-            animate={{ scale: isSelected ? 1 : 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-          >
-            <Check className="w-3.5 h-3.5 text-white" aria-hidden="true" />
-          </motion.div>
-        </div>
-      </div>
-      {isSelected && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center"
+          aria-hidden="true"
         >
-          <Check className="w-3.5 h-3.5 text-white" aria-hidden="true" />
-        </motion.div>
+          <Icon className="h-6 w-6" />
+        </motion.span>
+        <div className="min-w-0 flex-1">
+          <h4 className="font-semibold leading-snug text-green-950">{product.name}</h4>
+          <p className="mt-1 text-sm leading-relaxed text-green-600 line-clamp-2">{product.description}</p>
+        </div>
+        {/* Animated checkmark */}
+        <motion.span
+          initial={false}
+          animate={isSelected ? { scale: 1, opacity: 1 } : { scale: 0.5, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 20 }}
+          className={clsx(
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2',
+            isSelected ? 'border-green-500 bg-green-500 text-white' : 'border-green-200 text-transparent'
+          )}
+          aria-hidden="true"
+        >
+          <Check className="h-3.5 w-3.5" />
+        </motion.span>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {product.tags.slice(0, 3).map((tag) => (
+          <span
+            key={tag}
+            className={clsx(
+              'rounded-full px-2 py-0.5 text-xs',
+              isSelected ? 'bg-green-100 text-green-700' : 'bg-green-50 text-green-600'
+            )}
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Size + price footer */}
+      <div className="mt-3 flex items-center justify-between border-t border-green-100 pt-3">
+        <span className="text-xs text-green-500">{product.size}</span>
+        <span className="text-right">
+          <span className={clsx('text-base font-bold', isSelected ? 'text-green-700' : 'text-green-800')}>
+            {formatINR(effectivePrice ?? product.price)}
+          </span>
+          {quantityNote && (
+            <span className="ml-1.5 text-xs font-normal text-green-500">{quantityNote}</span>
+          )}
+        </span>
+      </div>
+
+      {isSelected && (
+        <motion.span
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 16 }}
+          className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow text-white"
+          aria-hidden="true"
+        >
+          <Check className="h-3.5 w-3.5" />
+        </motion.span>
       )}
     </motion.button>
   );
 }
 
-export function Step1Seeds() {
-  const { config, toggleSeed, updateSeeds, selectedItems } = useKitBuilder();
-  const seeds = getProductsByCategory('seeds');
-
+function StepShell({ title, description, children, aside }: { title: string; description: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.4, ease: EASE }}
       className="space-y-6"
     >
       <div>
-        <h3 className="text-2xl font-semibold text-green-950">{categoryLabels.seeds}</h3>
-        <p className="mt-1 text-green-600">{categoryDescriptions.seeds}</p>
+        <h3 className="text-2xl font-semibold text-green-950">{title}</h3>
+        <p className="mt-1 text-green-600">{description}</p>
+        {aside}
       </div>
+      {children}
+    </motion.div>
+  );
+}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {seeds.map((seed) => (
-          <ProductCard
+export function Step1Seeds() {
+  const { config, toggleSeed, selectedItems } = useKitBuilder();
+  const seeds = getProductsByCategory('seeds');
+  const multiplier = getKitSizeMultiplier(config.kitSize);
+
+  return (
+    <StepShell title={categoryLabels.seeds} description={categoryDescriptions.seeds}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {seeds.map((seed, i) => (
+          <KitProductCard
             key={seed.id}
             product={seed}
+            index={i}
             isSelected={config.seeds.includes(seed.id)}
             onClick={() => toggleSeed(seed.id)}
-            multiple
+            effectivePrice={Math.round(seed.price * multiplier)}
+            quantityNote={multiplier !== 1 ? `×${multiplier}` : null}
           />
         ))}
       </div>
@@ -146,215 +201,223 @@ export function Step1Seeds() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-xl bg-green-50 border border-green-200"
+          className="rounded-xl border border-green-200 bg-green-50 p-4 overflow-hidden"
         >
-          <h4 className="font-medium text-green-800 mb-3 flex items-center gap-2">
-            <Leaf className="w-5 h-5" aria-hidden="true" />
+          <h4 className="mb-3 flex items-center gap-2 font-medium text-green-800">
+            <Leaf className="h-5 w-5" aria-hidden="true" />
             Selected Seeds ({config.seeds.length})
           </h4>
           <div className="flex flex-wrap gap-2">
             {selectedItems.seeds.map((seed) => (
               <motion.span
                 key={seed.id}
+                layout
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-green-200 rounded-full text-sm text-green-700"
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm text-green-700"
               >
                 {seed.name}
                 <button
                   onClick={() => toggleSeed(seed.id)}
-                  className="p-0.5 rounded-full hover:bg-green-100 text-green-500"
+                  className="rounded-full p-0.5 text-green-500 hover:bg-green-100"
                   aria-label={`Remove ${seed.name}`}
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <Minus className="h-3.5 w-3.5" />
                 </button>
               </motion.span>
             ))}
           </div>
         </motion.div>
       )}
-    </motion.div>
+    </StepShell>
   );
 }
 
 export function Step2Soil() {
   const { config, setSoil } = useKitBuilder();
   const soils = getProductsByCategory('soil');
+  const multiplier = getKitSizeMultiplier(config.kitSize);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      <div>
-        <h3 className="text-2xl font-semibold text-green-950">{categoryLabels.soil}</h3>
-        <p className="mt-1 text-green-600">{categoryDescriptions.soil}</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {soils.map((soil) => (
-          <ProductCard
+    <StepShell title={categoryLabels.soil} description={categoryDescriptions.soil}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="radiogroup" aria-label="Choose your soil">
+        {soils.map((soil, i) => (
+          <KitProductCard
             key={soil.id}
             product={soil}
+            index={i}
             isSelected={config.soil === soil.id}
             onClick={() => setSoil(config.soil === soil.id ? null : soil.id)}
-            showPrice
+            effectivePrice={Math.round(soil.price * multiplier)}
+            quantityNote={multiplier !== 1 ? `×${multiplier}` : null}
           />
         ))}
       </div>
 
       {config.soil && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-xl bg-green-50 border border-green-200"
-        >
-          <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
-            <Droplets className="w-5 h-5" aria-hidden="true" />
-            Selected Soil
-          </h4>
-          <p className="text-green-700">
-            {getProductById(config.soil)?.name}
-          </p>
-        </motion.div>
+        <SelectionNote icon={<Droplets className="h-5 w-5" aria-hidden="true" />} title="Selected Soil" value={getProductById(config.soil)?.name} />
       )}
-    </motion.div>
+    </StepShell>
   );
 }
 
 export function Step3Fertilizer() {
   const { config, setFertilizer } = useKitBuilder();
   const fertilizers = getProductsByCategory('fertilizer');
+  const multiplier = getKitSizeMultiplier(config.kitSize);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      <div>
-        <h3 className="text-2xl font-semibold text-green-950">{categoryLabels.fertilizer}</h3>
-        <p className="mt-1 text-green-600">{categoryDescriptions.fertilizer}</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {fertilizers.map((fert) => (
-          <ProductCard
+    <StepShell title={categoryLabels.fertilizer} description={categoryDescriptions.fertilizer}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="radiogroup" aria-label="Choose nutrition">
+        {fertilizers.map((fert, i) => (
+          <KitProductCard
             key={fert.id}
             product={fert}
+            index={i}
             isSelected={config.fertilizer === fert.id}
             onClick={() => setFertilizer(config.fertilizer === fert.id ? null : fert.id)}
-            showPrice
+            effectivePrice={Math.round(fert.price * multiplier)}
+            quantityNote={multiplier !== 1 ? `×${multiplier}` : null}
           />
         ))}
       </div>
 
       {config.fertilizer && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-xl bg-green-50 border border-green-200"
-        >
-          <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
-            <Sun className="w-5 h-5" aria-hidden="true" />
-            Selected Nutrition
-          </h4>
-          <p className="text-green-700">
-            {getProductById(config.fertilizer)?.name}
-          </p>
-        </motion.div>
+        <SelectionNote icon={<Sun className="h-5 w-5" aria-hidden="true" />} title="Selected Nutrition" value={getProductById(config.fertilizer)?.name} />
       )}
-    </motion.div>
+    </StepShell>
   );
 }
 
 export function Step4PestProtection() {
   const { config, setPestProtection } = useKitBuilder();
   const pestProtections = getProductsByCategory('pest-protection');
+  const multiplier = getKitSizeMultiplier(config.kitSize);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      <div>
-        <h3 className="text-2xl font-semibold text-green-950">{categoryLabels['pest-protection']}</h3>
-        <p className="mt-1 text-green-600">{categoryDescriptions['pest-protection']}</p>
+    <StepShell
+      title={categoryLabels['pest-protection']}
+      description={categoryDescriptions['pest-protection']}
+      aside={
         <p className="mt-2 text-sm text-green-500">
           These products help manage pests naturally. They work best when used preventively and as part of integrated plant care.
         </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {pestProtections.map((pest) => (
-          <ProductCard
+      }
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="radiogroup" aria-label="Choose natural pest protection">
+        {pestProtections.map((pest, i) => (
+          <KitProductCard
             key={pest.id}
             product={pest}
+            index={i}
             isSelected={config.pestProtection === pest.id}
             onClick={() => setPestProtection(config.pestProtection === pest.id ? null : pest.id)}
-            showPrice
+            effectivePrice={Math.round(pest.price * multiplier)}
+            quantityNote={multiplier !== 1 ? `×${multiplier}` : null}
           />
         ))}
       </div>
 
       {config.pestProtection && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="p-4 rounded-xl bg-green-50 border border-green-200"
-        >
-          <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
-            <Shield className="w-5 h-5" aria-hidden="true" />
-            Selected Protection
-          </h4>
-          <p className="text-green-700">
-            {getProductById(config.pestProtection)?.name}
-          </p>
-        </motion.div>
+        <SelectionNote icon={<Shield className="h-5 w-5" aria-hidden="true" />} title="Selected Protection" value={getProductById(config.pestProtection)?.name} />
       )}
-    </motion.div>
+    </StepShell>
   );
 }
 
-export function Step5KitSize() {
+export function Step5Accessories() {
+  const { config, toggleAccessory, selectedItems } = useKitBuilder();
+  const accessories = getProductsByCategory('accessories');
+
+  return (
+    <StepShell
+      title={categoryLabels.accessories}
+      description={categoryDescriptions.accessories}
+      aside={
+        <p className="mt-2 text-sm text-green-500">
+          {selectedItems.accessories.length === 0
+            ? 'Nothing added yet — accessories are charged once, at unit price.'
+            : `${selectedItems.accessories.length} added · charged once, at unit price.`}
+        </p>
+      }
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {accessories.map((acc, i) => (
+          <KitProductCard
+            key={acc.id}
+            product={acc}
+            index={i}
+            isSelected={config.accessories.includes(acc.id)}
+            onClick={() => toggleAccessory(acc.id)}
+          />
+        ))}
+      </div>
+
+      {config.accessories.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="rounded-xl border border-green-200 bg-green-50 p-4 overflow-hidden"
+        >
+          <h4 className="mb-3 flex items-center gap-2 font-medium text-green-800">
+            <Sparkles className="h-5 w-5" aria-hidden="true" />
+            Selected Accessories ({config.accessories.length})
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {selectedItems.accessories.map((acc) => (
+              <motion.span
+                key={acc.id}
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm text-green-700"
+              >
+                {acc.name}
+                <button
+                  onClick={() => toggleAccessory(acc.id)}
+                  className="rounded-full p-0.5 text-green-500 hover:bg-green-100"
+                  aria-label={`Remove ${acc.name}`}
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+              </motion.span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </StepShell>
+  );
+}
+
+export function Step6KitSize() {
   const { config, setKitSize, kitSizeOption, kitSizes } = useKitBuilder();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      <div>
-        <h3 className="text-2xl font-semibold text-green-950">Choose kit size</h3>
-        <p className="mt-1 text-green-600">Select the size that matches your growing space and ambitions.</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kitSizes.map((size) => (
+    <StepShell title="Choose kit size" description="Select the size that matches your growing space and ambitions.">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="radiogroup" aria-label="Choose kit size">
+        {kitSizes.map((size, i) => (
           <motion.button
             key={size.id}
             onClick={() => setKitSize(size.id)}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(i * 0.06, 0.24), duration: 0.4, ease: EASE }}
+            aria-pressed={config.kitSize === size.id}
             className={clsx(
-              'relative p-5 rounded-xl border-2 transition-all duration-300 text-left',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500',
+              'relative rounded-2xl border-2 p-5 text-left transition-colors duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2',
               config.kitSize === size.id
                 ? 'border-green-500 bg-green-50 shadow-md'
                 : 'border-green-100 bg-white hover:border-green-300 hover:shadow-lg'
             )}
-            whileHover={{ y: -2, scale: 1.01 }}
+            whileHover={{ y: -3 }}
             whileTap={{ scale: 0.99 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <div className="flex items-center gap-3 mb-3">
+            <div className="mb-3 flex items-center gap-3">
               <div className={clsx(
-                'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
+                'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
                 config.kitSize === size.id ? 'bg-green-100' : 'bg-green-50'
               )}>
                 <span className={clsx('text-2xl font-bold', config.kitSize === size.id ? 'text-green-600' : 'text-green-400')}>
@@ -366,13 +429,13 @@ export function Step5KitSize() {
                 <p className="text-sm text-green-600">{size.multiplier}x base quantity</p>
               </div>
             </div>
-            <p className="text-sm text-green-600 mb-3">{size.description}</p>
+            <p className="mb-3 text-sm text-green-600">{size.description}</p>
             <div className="flex flex-wrap gap-1.5">
               {size.suitableFor.map((space) => (
                 <span
                   key={space}
                   className={clsx(
-                    'px-2 py-0.5 text-xs rounded-full',
+                    'rounded-full px-2 py-0.5 text-xs',
                     config.kitSize === size.id ? 'bg-green-100 text-green-700' : 'bg-green-50 text-green-600'
                   )}
                 >
@@ -384,9 +447,11 @@ export function Step5KitSize() {
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center"
+                transition={{ type: 'spring', stiffness: 400, damping: 16 }}
+                className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white shadow"
+                aria-hidden="true"
               >
-                <Check className="w-3.5 h-3.5 text-white" aria-hidden="true" />
+                <Check className="h-3.5 w-3.5" />
               </motion.div>
             )}
           </motion.button>
@@ -396,17 +461,33 @@ export function Step5KitSize() {
       <motion.div
         initial={{ opacity: 0, height: 0 }}
         animate={{ opacity: 1, height: 'auto' }}
-        className="p-4 rounded-xl bg-amber-50 border border-amber-200"
+        className="overflow-hidden rounded-xl border border-amber-200 bg-amber-50 p-4"
       >
-        <h4 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
-          <Sparkles className="w-5 h-5" aria-hidden="true" />
+        <h4 className="mb-2 flex items-center gap-2 font-medium text-amber-800">
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
           Your Selection: {kitSizeOption.name}
         </h4>
         <p className="text-amber-700">
           {kitSizeOption.description}. Suitable for: {kitSizeOption.suitableFor.join(', ')}
         </p>
       </motion.div>
-    </motion.div>
+    </StepShell>
   );
 }
 
+function SelectionNote({ icon, title, value }: { icon: React.ReactNode; title: string; value?: string }) {
+  if (!value) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      className="overflow-hidden rounded-xl border border-green-200 bg-green-50 p-4"
+    >
+      <h4 className="mb-1 flex items-center gap-2 font-medium text-green-800">
+        <span aria-hidden="true">{icon}</span>
+        {title}
+      </h4>
+      <p className="text-green-700">{value}</p>
+    </motion.div>
+  );
+}

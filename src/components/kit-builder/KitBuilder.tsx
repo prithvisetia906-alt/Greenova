@@ -1,22 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useKitBuilder } from './KitBuilderContext';
-import { Step1Seeds, Step2Soil, Step3Fertilizer, Step4PestProtection, Step5KitSize } from './KitBuilderSteps';
-import { Step6Review } from './Step6Review';
-import { KitPreview, KitPreviewDesktop } from './KitPreview';
+import { Step1Seeds, Step2Soil, Step3Fertilizer, Step4PestProtection, Step5Accessories, Step6KitSize } from './KitBuilderSteps';
+import { Step7Review } from './Step7Review';
+import { KitSummary } from './KitSummary';
 import { Button } from '@/components/ui';
-import { ArrowLeft, ArrowRight, Check, X, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const steps = [
-  { id: 1, title: 'Seeds', icon: Sparkles },
-  { id: 2, title: 'Soil', icon: Sparkles },
-  { id: 3, title: 'Nutrition', icon: Sparkles },
-  { id: 4, title: 'Protection', icon: Sparkles },
-  { id: 5, title: 'Size', icon: Sparkles },
-  { id: 6, title: 'Review', icon: Sparkles },
+  { id: 1, title: 'Seeds' },
+  { id: 2, title: 'Soil' },
+  { id: 3, title: 'Nutrition' },
+  { id: 4, title: 'Protection' },
+  { id: 5, title: 'Extras' },
+  { id: 6, title: 'Size' },
+  { id: 7, title: 'Review' },
 ];
 
 const stepComponents = {
@@ -24,21 +25,33 @@ const stepComponents = {
   2: Step2Soil,
   3: Step3Fertilizer,
   4: Step4PestProtection,
-  5: Step5KitSize,
-  6: Step6Review,
+  5: Step5Accessories,
+  6: Step6KitSize,
+  7: Step7Review,
 };
 
+const EASE: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+
 export function KitBuilder() {
-  const { step, setStep, nextStep, prevStep, canProceed, config, resetConfig, totalPrice } = useKitBuilder();
+  const { step, setStep, nextStep, prevStep, canProceed, resetConfig } = useKitBuilder();
   const [mounted, setMounted] = useState(false);
+  const prevStepRef = useRef(1);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const direction = step >= prevStepRef.current ? 1 : -1;
+
+  const goToStep = (id: number) => {
+    prevStepRef.current = step;
+    setStep(id);
+  };
+
   if (!mounted) {
     return (
-      <div className="min-h-[500px] flex items-center justify-center">
+      <div className="flex min-h-[500px] items-center justify-center">
         <div className="animate-pulse text-green-400">Loading kit builder...</div>
       </div>
     );
@@ -48,55 +61,53 @@ export function KitBuilder() {
 
   return (
     <div className="w-full">
+      {/* Progress rail */}
       <div className="mb-8 overflow-x-auto pb-4 -mx-4 px-4" role="navigation" aria-label="Kit builder progress">
-        <div className="flex items-center min-w-max gap-2 sm:gap-4">
+        <div className="flex min-w-max items-center gap-2 sm:gap-3">
           {steps.map((s, index) => (
             <motion.div
               key={s.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: index * 0.04, duration: 0.35, ease: EASE }}
               className="flex items-center gap-2 sm:gap-3"
             >
               <motion.button
-                onClick={() => setStep(s.id)}
+                onClick={() => goToStep(s.id)}
                 disabled={s.id > step && !canProceed}
                 className={clsx(
-                  'relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2',
+                  'relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 sm:h-12 sm:w-12',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2',
                   s.id < step
-                    ? 'bg-green-500 text-white shadow-md'
+                    ? 'bg-green-600 text-white shadow-md'
                     : s.id === step
                     ? 'bg-green-100 text-green-700 ring-4 ring-green-100'
                     : 'bg-green-50 text-green-400'
                 )}
-                whileHover={s.id <= step ? { scale: 1.1 } : undefined}
+                whileHover={s.id <= step ? { scale: 1.08 } : undefined}
                 whileTap={s.id <= step ? { scale: 0.95 } : undefined}
                 aria-current={s.id === step ? 'step' : undefined}
                 aria-label={`Step ${s.id}: ${s.title}`}
               >
                 {s.id < step ? (
-                  <Check className="w-5 h-5" aria-hidden="true" />
+                  <Check className="h-5 w-5" aria-hidden="true" />
                 ) : (
-                  <span className="font-semibold text-lg">{s.id}</span>
+                  <span className="text-lg font-semibold">{s.id}</span>
                 )}
               </motion.button>
               <span className={clsx(
-                'hidden sm:block font-medium text-sm',
+                'hidden font-medium text-sm md:block',
                 s.id <= step ? 'text-green-700' : 'text-green-400'
               )}>
                 {s.title}
               </span>
               {index < steps.length - 1 && (
-                <motion.div
+                <div
                   className={clsx(
-                    'hidden sm:block h-1 w-16 sm:w-24 rounded-full',
+                    'hidden h-1 w-10 rounded-full transition-colors duration-500 md:block lg:w-14',
                     s.id < step ? 'bg-green-500' : 'bg-green-100'
                   )}
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: s.id < step ? 1 : 0 }}
-                  transition={{ delay: 0.3 + index * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
-                  style={{ transformOrigin: 'left center' }}
+                  aria-hidden="true"
                 />
               )}
             </motion.div>
@@ -104,16 +115,19 @@ export function KitBuilder() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <AnimatePresence mode="wait">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+        {/* LEFT: configuration controls */}
+        <div className="lg:col-span-3">
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={step}
-              initial={{ opacity: 0, x: step > (steps[step - 2]?.id || 0) ? 30 : -30 }}
+              custom={direction}
+              initial={reduce ? { opacity: 0 } : { opacity: 0, x: 32 * direction }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: step > (steps[step - 2]?.id || 0) ? -30 : 30 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, x: -32 * direction }}
+              transition={{ duration: 0.3, ease: EASE }}
               className="w-full"
+              onAnimationComplete={() => { prevStepRef.current = step; }}
             >
               <CurrentStepComponent />
             </motion.div>
@@ -123,20 +137,20 @@ export function KitBuilder() {
             <Button
               variant="outline"
               size="lg"
-              onClick={prevStep}
+              onClick={() => { prevStepRef.current = step; prevStep(); }}
               disabled={step === 1}
-              leftIcon={<ArrowLeft className="w-4 h-4" />}
+              leftIcon={<ArrowLeft className="h-4 w-4" />}
             >
               Back
             </Button>
             <div className="flex-1" />
-            {step < 6 ? (
+            {step < 7 ? (
               <Button
                 variant="primary"
                 size="lg"
-                onClick={nextStep}
+                onClick={() => { prevStepRef.current = step; nextStep(); }}
                 disabled={!canProceed}
-                rightIcon={<ArrowRight className="w-4 h-4" />}
+                rightIcon={<ArrowRight className="h-4 w-4" />}
               >
                 Next Step
               </Button>
@@ -144,29 +158,32 @@ export function KitBuilder() {
               <Button
                 variant="ghost"
                 size="lg"
-                onClick={() => { resetConfig(); setStep(1); }}
+                onClick={() => { resetConfig(); prevStepRef.current = 7; setStep(1); }}
               >
                 Start Over
               </Button>
             )}
           </div>
+
+          {/* Mobile live summary underneath controls */}
+          <div className="mt-8 lg:hidden">
+            <KitSummary />
+          </div>
         </div>
 
-        <div className="hidden lg:block">
+        {/* RIGHT: live kit preview (desktop) */}
+        <div className="hidden lg:col-span-2 lg:block">
           <div className="sticky top-24">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: EASE }}
               className="w-full"
             >
-              <KitPreviewDesktop />
+              <KitSummary />
             </motion.div>
           </div>
         </div>
-      </div>
-
-      <div className="lg:hidden mt-6">
-        <KitPreview />
       </div>
     </div>
   );
@@ -176,23 +193,19 @@ export function KitBuilderSection() {
   return (
     <section id="build-your-kit" className="section bg-bg-primary">
       <div className="container-main">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4" aria-hidden="true" />
+        <div className="mx-auto mb-12 max-w-3xl text-center">
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-700">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
             Interactive Kit Builder
           </span>
           <h2 className="section-title">Build Your Perfect Farming Kit</h2>
           <p className="section-subtitle mx-auto">
-            Choose what you want to grow, and we'll assemble everything you need — from seeds and soil to nutrition and natural plant protection.
+            Choose what you want to grow, and we&apos;ll assemble everything you need — from seeds and soil to nutrition and natural plant protection.
           </p>
         </div>
 
-        <KitBuilderProvider>
-          <KitBuilder />
-        </KitBuilderProvider>
+        <KitBuilder />
       </div>
     </section>
   );
 }
-
-import { KitBuilderProvider } from './KitBuilderContext';

@@ -103,7 +103,7 @@ export function KitPreview() {
           {config.seeds.length} seed variety{config.seeds.length !== 1 ? 'ies' : ''}{hasSoil ? ' • Soil' : ''}{hasFertilizer ? ' • Nutrition' : ''}{hasPest ? ' • Protection' : ''}{hasAccessories ? ' • Tools' : ''}
         </p>
         <p className="mt-2 text-sm text-green-500">
-          Step {step} of 6 • {kitSizeOption.multiplier}x quantities
+          Step {step} of 7 • {kitSizeOption.multiplier}x quantities
         </p>
       </motion.div>
     </motion.div>
@@ -197,7 +197,7 @@ export function KitPreviewDesktop() {
           {config.seeds.length} seed variety{config.seeds.length !== 1 ? 'ies' : ''}{hasSoil ? ' • Soil' : ''}{hasFertilizer ? ' • Nutrition' : ''}{hasPest ? ' • Protection' : ''}{hasAccessories ? ' • Tools' : ''}
         </p>
         <p className="mt-2 text-sm text-green-500">
-          Step {step} of 6 • {kitSizeOption.multiplier}x quantities
+          Step {step} of 7 • {kitSizeOption.multiplier}x quantities
         </p>
       </motion.div>
     </motion.div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { ToastProvider } from '@/components/ui/Toast';
+import { KitBuilderProvider } from '@/components/kit-builder/KitBuilderContext';
 import { Navbar } from '@/components/sections/Navbar';
 import { Hero } from '@/components/sections/Hero';
 import { KitBuilderSection } from '@/components/kit-builder/KitBuilder';
@@ -23,9 +24,11 @@ export default function Home() {
       <Navbar />
       <main id="main-content" className="flex-1 pt-16 lg:pt-20">
         <Hero />
-        <KitBuilderSection />
-        <HowItWorks />
-        <Products />
+        <KitBuilderProvider>
+          <KitBuilderSection />
+          <HowItWorks />
+          <Products />
+        </KitBuilderProvider>
         <WhyChooseUs />
         <HomeFarm />
         <WhatsInside />

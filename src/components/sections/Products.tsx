@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { products, getProductsByCategory, ProductCategory } from '@/data/products';
+import { useKitBuilder } from '@/components/kit-builder/KitBuilderContext';
+import { useToast } from '@/components/ui/Toast';
 import { Card } from '@/components/ui';
 import { Button } from '@/components/ui';
-import { Plus, ShoppingBag, Search, Filter, X, ArrowRight } from 'lucide-react';
+import { Plus, Check, ShoppingBag, Search, X, ArrowRight } from 'lucide-react';
 import { clsx } from 'clsx';
-import Image from 'next/image';
 
 const categories: { id: ProductCategory; label: string; icon: string }[] = [
   { id: 'seeds', label: 'Seeds', icon: '🌱' },
@@ -171,6 +172,45 @@ interface ProductCardProps {
 
 function ProductCard({ product, index, isInView }: ProductCardProps) {
   const [hovered, setHovered] = useState(false);
+  const { config, toggleSeed, setSoil, setFertilizer, setPestProtection, toggleAccessory } = useKitBuilder();
+  const { addToast } = useToast();
+
+  const isInKit =
+    product.category === 'seeds' ? config.seeds.includes(product.id)
+    : product.category === 'soil' ? config.soil === product.id
+    : product.category === 'fertilizer' ? config.fertilizer === product.id
+    : product.category === 'pest-protection' ? config.pestProtection === product.id
+    : config.accessories.includes(product.id);
+
+  const scrollToBuilder = () => {
+    document.querySelector('#build-your-kit')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleAdd = () => {
+    switch (product.category) {
+      case 'seeds':
+        toggleSeed(product.id);
+        break;
+      case 'soil':
+        setSoil(config.soil === product.id ? null : product.id);
+        break;
+      case 'fertilizer':
+        setFertilizer(config.fertilizer === product.id ? null : product.id);
+        break;
+      case 'pest-protection':
+        setPestProtection(config.pestProtection === product.id ? null : product.id);
+        break;
+      case 'accessories':
+        toggleAccessory(product.id);
+        break;
+    }
+    if (isInKit) {
+      addToast({ type: 'info', title: 'Removed from kit', message: product.name });
+    } else {
+      addToast({ type: 'success', title: 'Added to your kit', message: product.name });
+      scrollToBuilder();
+    }
+  };
 
   return (
     <motion.article
@@ -211,7 +251,10 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
         </div>
 
         <div className="p-5 flex-1 flex flex-col">
-          <h3 className="font-semibold text-green-deep group-hover:text-green-primary transition-colors">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-green-500">
+            {getCategoryLabel(product.category)}
+          </p>
+          <h3 className="mt-1 font-semibold text-green-deep group-hover:text-green-primary transition-colors">
             {product.name}
           </h3>
           <p className="mt-2 text-sm text-green-600 line-clamp-2 flex-1">{product.description}</p>
@@ -231,12 +274,16 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
             </div>
             <Button
               size="sm"
-              variant="outline"
-              leftIcon={<Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />}
+              variant={isInKit ? 'primary' : 'outline'}
+              onClick={handleAdd}
+              leftIcon={isInKit
+                ? <Check className="w-4 h-4" />
+                : <Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />}
               className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition-all duration-300 sm:translate-x-2 sm:group-hover:translate-x-0"
-              aria-label={`Add ${product.name} to kit`}
+              aria-label={isInKit ? `Remove ${product.name} from kit` : `Add ${product.name} to kit`}
+              aria-pressed={isInKit}
             >
-              Add
+              {isInKit ? 'In Kit' : 'Add'}
             </Button>
           </div>
         </div>

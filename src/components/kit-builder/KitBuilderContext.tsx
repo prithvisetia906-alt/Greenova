@@ -114,7 +114,8 @@ export function KitBuilderProvider({ children }: { children: ReactNode }) {
         return config.fertilizer !== null;
       case 4:
         return config.pestProtection !== null;
-      case 5:
+      case 5: // accessories are optional
+      case 6: // kit size always has a value
         return true;
       default:
         return true;
@@ -122,7 +123,7 @@ export function KitBuilderProvider({ children }: { children: ReactNode }) {
   }, [step, config]);
 
   const nextStep = useCallback(() => {
-    if (canProceed && step < 6) {
+    if (canProceed && step < 7) {
       setStep((prev) => prev + 1);
     }
   }, [canProceed, step]);
