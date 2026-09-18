@@ -186,21 +186,36 @@ function StageCard({ stage, index, active, done }: { stage: (typeof stages)[numb
 }
 
 function PlantCanvas({ growth, reduce }: { growth: MotionValue<number>; reduce: boolean }) {
-  // Signature SVG growth — transform/opacity/pathLength only
-  const stemDraw = useTransform(growth, [0.05, 0.65], [0, 1]);
-  const seedFade = useTransform(growth, [0, 0.18], [1, 0]);
-  const seedScale = useTransform(growth, [0, 0.18], [1, 0.6]);
-  const leafLeft = useTransform(growth, [0.35, 0.58], [0, 1]);
-  const leafRight = useTransform(growth, [0.5, 0.72], [0, 1]);
+  // Signature SVG growth — transform/opacity/pathLength only.
+  // Phases overlap so the plant never vanishes mid-morph:
+  // seed sinks (0–0.30) → sprout cotyledons (0.10–0.60) → stem (0.05–0.70)
+  // → true leaves (0.38–0.74) → bud → fruit (0.74–0.95).
+  const stemDraw = useTransform(growth, [0.05, 0.7], [0, 1]);
+  const seedFade = useTransform(growth, [0.1, 0.3], [1, 0]);
+  const seedScale = useTransform(growth, [0.1, 0.3], [1, 0.7]);
+  const seedSink = useTransform(growth, [0, 0.3], [0, 7]);
+  const sproutIn = useTransform(growth, [0.1, 0.24], [0, 1]);
+  const sproutOut = useTransform(growth, [0.45, 0.6], [1, 0]);
+  const leafLeft = useTransform(growth, [0.38, 0.6], [0, 1]);
+  const leafRight = useTransform(growth, [0.52, 0.74], [0, 1]);
   const fruitScale = useTransform(growth, [0.74, 0.95], [0, 1]);
   const fruitOpacity = useTransform(growth, [0.74, 0.85], [0, 1]);
   const glow = useTransform(growth, [0.6, 1], [0, 0.45]);
   const rootsDraw = useTransform(growth, [0, 0.25], [0, 1]);
-  const budOpacity = useTransform(growth, [0.55, 0.68, 0.8], [0, 1, 0]);
+  const budOpacity = useTransform(growth, [0.58, 0.7, 0.82], [0, 1, 0]);
 
   const staticStyle = reduce
     ? { pathLength: 1 as const, opacity: 1 as const, scale: 1 as const }
     : undefined;
+
+  // Gentle idle sway on the whole shoot so the mature plant feels alive.
+  // Amplitude is tiny (±0.7°) — a tremble on the seedling, a sway on the plant.
+  const swayProps = reduce
+    ? {}
+    : {
+        animate: { rotate: [0, 0.7, 0, -0.7, 0] as number[] },
+        transition: { duration: 7, repeat: Infinity, ease: 'easeInOut' as const },
+      };
 
   return (
     <div className="relative w-full aspect-[4/5] max-h-[420px]">
@@ -225,69 +240,98 @@ function PlantCanvas({ growth, reduce }: { growth: MotionValue<number>; reduce: 
           style={reduce ? staticStyle : { pathLength: rootsDraw }}
         />
 
-        {/* Stem */}
-        <motion.path
-          d="M160 366 C158 300 162 240 160 168"
-          fill="none"
-          stroke="#1E5D2E"
-          strokeWidth="7"
-          strokeLinecap="round"
-          style={reduce ? staticStyle : { pathLength: stemDraw }}
-        />
+        {/* Living shoot: stem + leaves + fruit sway together */}
+        <motion.g
+          {...swayProps}
+          style={{ transformBox: 'fill-box', transformOrigin: '50% 100%' }}
+        >
+          {/* Stem */}
+          <motion.path
+            d="M160 366 C158 300 162 240 160 168"
+            fill="none"
+            stroke="#1E5D2E"
+            strokeWidth="7"
+            strokeLinecap="round"
+            style={reduce ? staticStyle : { pathLength: stemDraw }}
+          />
 
-        {/* Left leaf */}
+          {/* Left true leaf — unfurls from the stem */}
+          <motion.g
+            style={
+              reduce
+                ? { scale: 1, opacity: 1, transformBox: 'fill-box', transformOrigin: '100% 100%' }
+                : { scale: leafLeft, opacity: leafLeft, transformBox: 'fill-box', transformOrigin: '100% 100%' }
+            }
+          >
+            <path d="M160 282 C130 270 112 248 108 224 C134 228 154 246 160 282 Z" fill="#3DA84A" />
+            <path d="M158 278 C140 264 126 250 116 232" fill="none" stroke="#144224" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+          </motion.g>
+
+          {/* Right true leaf — unfurls from the stem */}
+          <motion.g
+            style={
+              reduce
+                ? { scale: 1, opacity: 1, transformBox: 'fill-box', transformOrigin: '0% 100%' }
+                : { scale: leafRight, opacity: leafRight, transformBox: 'fill-box', transformOrigin: '0% 100%' }
+            }
+          >
+            <path d="M160 248 C190 238 206 218 210 196 C184 200 164 216 160 248 Z" fill="#2A7F3A" />
+            <path d="M162 244 C180 232 194 218 202 202" fill="none" stroke="#FAFAF8" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+          </motion.g>
+
+          {/* Bud before fruit */}
+          <motion.circle
+            cx="160"
+            cy="162"
+            r="7"
+            fill="#5FC46E"
+            style={reduce ? { opacity: 0 } : { opacity: budOpacity }}
+          />
+
+          {/* Fruit / harvest */}
+          <motion.g
+            style={
+              reduce
+                ? { scale: 1, opacity: 1, transformBox: 'fill-box', transformOrigin: '50% 50%' }
+                : { scale: fruitScale, opacity: fruitOpacity, transformBox: 'fill-box', transformOrigin: '50% 50%' }
+            }
+          >
+            <circle cx="160" cy="148" r="17" fill="#C0392B" />
+            <circle cx="154" cy="142" r="5" fill="#fff" opacity="0.45" />
+            <path d="M160 131 C160 124 165 120 171 120" fill="none" stroke="#1E5D2E" strokeWidth="4" strokeLinecap="round" />
+            <path d="M171 120 C178 116 186 117 190 122 C184 127 176 127 171 120 Z" fill="#3DA84A" />
+          </motion.g>
+        </motion.g>
+
+        {/* Seed — sinks into the soil as the sprout takes over */}
         <motion.g
           style={
             reduce
-              ? { scale: 1, opacity: 1, transformOrigin: '160px 282px' }
-              : { scale: leafLeft, opacity: leafLeft, transformOrigin: '160px 282px' }
+              ? { opacity: 0, transformBox: 'fill-box', transformOrigin: '50% 50%' }
+              : { opacity: seedFade, scale: seedScale, y: seedSink, transformBox: 'fill-box', transformOrigin: '50% 50%' }
           }
         >
-          <path d="M160 282 C130 270 112 248 108 224 C134 228 154 246 160 282 Z" fill="#3DA84A" />
-          <path d="M158 278 C140 264 126 250 116 232" fill="none" stroke="#144224" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-        </motion.g>
-
-        {/* Right leaf */}
-        <motion.g
-          style={
-            reduce
-              ? { scale: 1, opacity: 1, transformOrigin: '160px 248px' }
-              : { scale: leafRight, opacity: leafRight, transformOrigin: '160px 248px' }
-          }
-        >
-          <path d="M160 248 C190 238 206 218 210 196 C184 200 164 216 160 248 Z" fill="#2A7F3A" />
-          <path d="M162 244 C180 232 194 218 202 202" fill="none" stroke="#FAFAF8" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-        </motion.g>
-
-        {/* Seed that fades as sprout takes over */}
-        <motion.g style={reduce ? { opacity: 0 } : { opacity: seedFade, scale: seedScale, transformOrigin: '160px 356px' }}>
           <ellipse cx="160" cy="356" rx="13" ry="10" fill="#C4963A" />
           <ellipse cx="156" cy="353" rx="4" ry="3" fill="#FCEFD3" opacity="0.8" />
         </motion.g>
 
-        {/* Fruit / harvest */}
-        <motion.g
-          style={
-            reduce
-              ? { scale: 1, opacity: 1, transformOrigin: '160px 148px' }
-              : { scale: fruitScale, opacity: fruitOpacity, transformOrigin: '160px 148px' }
-          }
-        >
-          <circle cx="160" cy="148" r="17" fill="#C0392B" />
-          <circle cx="154" cy="142" r="5" fill="#fff" opacity="0.45" />
-          <path d="M160 131 C160 124 165 120 171 120" fill="none" stroke="#1E5D2E" strokeWidth="4" strokeLinecap="round" />
-          <path d="M171 120 C178 116 186 117 190 122 C184 127 176 127 171 120 Z" fill="#3DA84A" />
-        </motion.g>
-
-        {/* Bud before fruit */}
-        <motion.circle
-          cx="160"
-          cy="162"
-          r="7"
-          fill="#5FC46E"
-          style={reduce ? { opacity: 0 } : { opacity: budOpacity }}
-        />
+        {/* Sprout cotyledons — bridge seed → stem → true leaves */}
+        {!reduce && <SproutPair growIn={sproutIn} growOut={sproutOut} />}
       </svg>
     </div>
   );
 }
+
+function SproutPair({ growIn, growOut }: { growIn: MotionValue<number>; growOut: MotionValue<number> }) {
+  // Visible only in the overlap window: fades in with the seed sinking,
+  // fades out as the true leaves unfurl. Opacity is the product of both.
+  const pairOpacity = useTransform([growIn, growOut], ([i, o]: number[]) => i * o);
+  const pairScale = useTransform(growIn, [0, 1], [0.5, 1]);
+  return (
+    <motion.g style={{ opacity: pairOpacity, scale: pairScale, transformBox: 'fill-box', transformOrigin: '50% 100%' }}>
+      <ellipse cx="147" cy="348" rx="11" ry="5.5" fill="#5FC46E" transform="rotate(-28 147 348)" />
+      <ellipse cx="173" cy="348" rx="11" ry="5.5" fill="#5FC46E" transform="rotate(28 173 348)" />
+    </motion.g>
+  );
+}
+
