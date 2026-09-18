@@ -53,14 +53,19 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-green-950 text-green-50 relative overflow-hidden">
+    <footer className="bg-green-deep text-green-50 relative overflow-hidden">
       <div className="absolute inset-0" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-700/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-600/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-[384px] h-[384px] bg-green-emerald/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-[384px] h-[384px] bg-amber-warm/15 rounded-full blur-3xl" />
       </div>
 
       <div className="relative container-main py-16 lg:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16 mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16 mb-16"
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -68,7 +73,7 @@ export function Footer() {
             className="lg:col-span-2"
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-primary to-green-emerald flex items-center justify-center">
                 <Leaf className="w-7 h-7 text-white" aria-hidden="true" />
               </div>
               <span className="text-2xl font-display font-medium text-white">Greenova</span>
@@ -160,7 +165,7 @@ export function Footer() {
               </ul>
             </nav>
           </motion.div>
-        </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -22,7 +22,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 30);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -56,7 +56,7 @@ export function Navbar() {
     <motion.header
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={clsx(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
@@ -69,26 +69,28 @@ export function Navbar() {
           <motion.a
             href="#hero"
             onClick={(e) => { e.preventDefault(); scrollToSection('#hero'); }}
-            className="flex items-center gap-2 text-green-950 font-display font-medium text-xl"
+            className="flex items-center gap-2 text-green-deep font-display font-medium text-xl"
             aria-label="Greenova Home"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <div className="w-9 h-9 rounded-xl bg-green-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-primary to-green-emerald flex items-center justify-center shadow-lg">
               <Leaf className="w-5 h-5 text-white" aria-hidden="true" />
             </div>
             <span className="hidden sm:block">Greenova</span>
           </motion.a>
 
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
               <motion.button
                 key={item.label}
                 onClick={(e) => { e.preventDefault(); scrollToSection(item.href); }}
                 className={clsx(
-                  'relative px-3 py-2 text-sm font-medium transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 rounded-lg',
+                  'relative px-4 py-2 text-sm font-medium transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 rounded-lg',
                   activeSection === item.href
-                    ? 'text-green-700'
-                    : 'text-green-600 hover:text-green-900'
+                    ? 'text-green-primary bg-green-pale'
+                    : 'text-green-600 hover:text-green-900 hover:bg-green-50'
                 )}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
@@ -98,7 +100,7 @@ export function Navbar() {
                   <motion.div
                     layoutId="active-indicator"
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-green-500"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-green-primary"
                     aria-hidden="true"
                   />
                 )}
@@ -106,12 +108,12 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
             <Button
               variant="ghost"
               size="md"
               onClick={(e) => { e.preventDefault(); scrollToSection('#build-your-kit'); }}
-              className="text-green-700 hover:text-green-900"
+              className="text-green-700 hover:text-green-900 hover:bg-green-50"
             >
               Build Your Kit
             </Button>
@@ -148,8 +150,8 @@ export function Navbar() {
             aria-label="Navigation menu"
           >
             <div className="flex items-center justify-between h-16 px-4 border-b border-green-100">
-              <div className="flex items-center gap-2 text-green-950 font-display font-medium text-xl">
-                <div className="w-9 h-9 rounded-xl bg-green-600 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-green-deep font-display font-medium text-xl">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-primary to-green-emerald flex items-center justify-center">
                   <Leaf className="w-5 h-5 text-white" aria-hidden="true" />
                 </div>
                 <span>Greenova</span>

@@ -39,8 +39,13 @@ export function Products() {
   return (
     <section id="products" ref={ref} className="section bg-bg-primary">
       <div className="container-main">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: isInView ? 0.1 : 0 }}
+          className="text-center max-w-3xl mx-auto mb-12"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-pale text-green-primary text-sm font-medium mb-4">
             <ShoppingBag className="w-4 h-4" aria-hidden="true" />
             Our Products
           </span>
@@ -48,12 +53,12 @@ export function Products() {
           <p className="section-subtitle mx-auto">
             Curated organic inputs for every stage of your growing journey. Each product is selected for quality and effectiveness.
           </p>
-        </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: isInView ? 0.1 : 0 }}
+          transition={{ delay: isInView ? 0.2 : 0 }}
           className="mb-8 flex flex-wrap items-center justify-center gap-2"
           role="tablist"
           aria-label="Product categories"
@@ -68,10 +73,10 @@ export function Products() {
               id={`tab-${cat.id}`}
               className={clsx(
                 'px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2',
                 activeCategory === cat.id
-                  ? 'bg-green-600 text-white shadow-md'
-                  : 'bg-white text-green-700 border border-green-200 hover:border-green-300 hover:shadow-sm'
+                  ? 'bg-green-primary text-white shadow-md'
+                  : 'bg-white text-green-700 border border-green-200 hover:border-green-300 hover:shadow-sm hover:bg-green-50'
               )}
             >
               <span className="flex items-center gap-2">
@@ -85,7 +90,7 @@ export function Products() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: isInView ? 0.2 : 0 }}
+          transition={{ delay: isInView ? 0.3 : 0 }}
           className="mb-8 max-w-xl mx-auto"
         >
           <div className="relative">
@@ -95,7 +100,7 @@ export function Products() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-green-200 bg-white text-green-900 placeholder-green-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+              className="w-full pl-12 pr-4 py-3 rounded-xl border border-green-200 bg-white text-green-900 placeholder-green-400 focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600"
               aria-label="Search products"
             />
             {searchQuery && (
@@ -146,7 +151,7 @@ export function Products() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: isInView ? 0.4 : 0 }}
+          transition={{ delay: isInView ? 0.5 : 0 }}
           className="mt-12 text-center"
         >
           <Button variant="outline" size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
@@ -172,11 +177,11 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: isInView ? 0.1 + index * 0.05 : 0, duration: 0.4 }}
-      whileHover={{ y: -4, boxShadow: '0 20px 40px -10px rgb(0 0 0 / 0.1)' }}
+      whileHover={{ y: -6, boxShadow: '0 24px 48px -12px rgb(0 0 0 / 0.12)' }}
       className="group"
     >
       <Card variant="product" padding="none" hover className="h-full flex flex-col overflow-hidden">
-        <div className="relative aspect-square overflow-hidden bg-green-50">
+        <div className="relative aspect-square overflow-hidden bg-green-pale">
           <div
             className={clsx(
               'absolute inset-0 bg-gradient-to-br from-green-100/50 to-amber-100/50 transition-transform duration-500',
@@ -191,8 +196,8 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
           </div>
           <div className="absolute top-3 right-3">
             <span className={clsx(
-              'px-2 py-1 rounded-full text-xs font-medium transition-opacity',
-              'opacity-0 group-hover:opacity-100',
+              'px-2 py-1 rounded-full text-xs font-medium transition-all duration-300',
+              'opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0',
               getCategoryBadgeStyle(product.category)
             )}>
               {getCategoryLabel(product.category)}
@@ -201,14 +206,14 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
         </div>
 
         <div className="p-5 flex-1 flex flex-col">
-          <h3 className="font-semibold text-green-950 group-hover:text-green-700 transition-colors">
+          <h3 className="font-semibold text-green-deep group-hover:text-green-primary transition-colors">
             {product.name}
           </h3>
           <p className="mt-2 text-sm text-green-600 line-clamp-2 flex-1">{product.description}</p>
 
           <div className="mt-3 flex flex-wrap gap-1.5">
             {product.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="px-2 py-0.5 text-xs bg-green-50 text-green-600 rounded-full">
+              <span key={tag} className="px-2 py-0.5 text-xs bg-green-pale text-green-700 rounded-full">
                 {tag}
               </span>
             ))}
@@ -223,7 +228,7 @@ function ProductCard({ product, index, isInView }: ProductCardProps) {
               size="sm"
               variant="outline"
               leftIcon={<Plus className="w-4 h-4" />}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              className="opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0"
               aria-label={`Add ${product.name} to kit`}
             >
               Add

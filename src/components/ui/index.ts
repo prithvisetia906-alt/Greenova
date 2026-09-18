@@ -4,3 +4,4 @@ export { Input, Textarea, Select, Checkbox, RadioGroup, type InputProps, type Te
 export { Badge, Avatar, Separator, Label, type BadgeProps, type AvatarProps, type SeparatorProps, type LabelProps } from './Badge';
 export { Modal, ConfirmModal, AlertModal, type ModalProps, type ConfirmModalProps, type AlertModalProps } from './Modal';
 export { ToastProvider, useToast, type Toast } from './Toast';
+export { ScrollReveal, StaggerContainer, StaggerItem } from './ScrollReveal';

@@ -1,52 +1,53 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary: #FAFAF7;
-  --color-bg-secondary: #F5F5EF;
-  --color-bg-tertiary: #EBEBDD;
+  --color-bg-primary: #FAFAF8;
+  --color-bg-secondary: #F3F4F0;
+  --color-bg-tertiary: #E8E9E3;
   --color-bg-card: #FFFFFF;
-  --color-bg-glass: rgba(255, 255, 255, 0.7);
+  --color-bg-glass: rgba(255, 255, 255, 0.8);
 
-  --color-text-primary: #1A1D16;
-  --color-text-secondary: #3D4430;
-  --color-text-muted: #6B735A;
-  --color-text-inverse: #FAFAF7;
+  --color-text-primary: #161A14;
+  --color-text-secondary: #2D3528;
+  --color-text-muted: #5E6B52;
+  --color-text-inverse: #FAFAF8;
 
-  --color-green-deep: #1B4D2E;
-  --color-green-primary: #2D6B3F;
-  --color-green-leaf: #4A9C5D;
-  --color-green-light: #7CC48A;
-  --color-green-pale: #E8F5EA;
-  --color-green-paler: #F1F8F2;
+  --color-green-deep: #144224;
+  --color-green-primary: #1E5D2E;
+  --color-green-emerald: #2A7F3A;
+  --color-green-leaf: #3DA84A;
+  --color-green-mint: #5FC46E;
+  --color-green-pale: #E4F4E7;
+  --color-green-paler: #F0F8F1;
 
-  --color-earth-brown: #8B7355;
-  --color-earth-light: #C9B8A0;
-  --color-earth-pale: #F5F0E8;
+  --color-earth-brown: #7A6548;
+  --color-earth-light: #B8A890;
+  --color-earth-pale: #F2EFEB;
 
-  --color-amber-warm: #D4A843;
-  --color-amber-light: #E8C56D;
-  --color-amber-pale: #FDF6E3;
+  --color-amber-warm: #C4963A;
+  --color-amber-light: #D8B45E;
+  --color-amber-pale: #FCEFD3;
 
-  --color-charcoal: #1A1D16;
-  --color-charcoal-light: #2D3328;
+  --color-charcoal: #161A14;
+  --color-charcoal-light: #252D23;
 
-  --color-border-light: #E5E8DF;
-  --color-border-medium: #D0D4C8;
-  --color-border-focus: #2D6B3F;
+  --color-border-light: #E0E3DB;
+  --color-border-medium: #C8CDBF;
+  --color-border-focus: #2A7F3A;
 
-  --color-success: #2D6B3F;
-  --color-warning: #D4A843;
-  --color-error: #C0392B;
+  --color-success: #2A7F3A;
+  --color-warning: #C4963A;
+  --color-error: #B83D2E;
 
   --font-sans: var(--font-inter);
   --font-display: var(--font-playfair);
   --font-mono: var(--font-jetbrains);
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08);
-  --shadow-lg: 0 12px 32px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 48px -8px rgb(0 0 0 / 0.12);
-  --shadow-glow: 0 0 40px -10px rgb(74 156 93 / 0.3);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.02);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 12px 28px -4px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 40px -8px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 40px -10px rgb(61 168 74 / 0.25);
 
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
@@ -55,9 +56,9 @@
   --radius-2xl: 2rem;
   --radius-full: 9999px;
 
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -91,7 +92,7 @@
   }
 
   ::selection {
-    background-color: var(--color-green-light);
+    background-color: var(--color-green-mint);
     color: var(--color-text-inverse);
   }
 
@@ -125,15 +126,55 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-green-deep via-green-primary to-green-leaf bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-green-deep via-green-primary to-green-emerald bg-clip-text text-transparent;
   }
 
   .glass-card {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+    @apply bg-white/80 backdrop-blur-md border border-white/30 shadow-xl rounded-2xl;
   }
 
   .text-balance {
     text-wrap: balance;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center font-medium px-6 py-3 text-base rounded-xl bg-green-700 text-white hover:bg-green-800 active:bg-green-900 shadow-sm hover:shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center font-medium px-6 py-3 text-base rounded-xl bg-green-100 text-green-800 hover:bg-green-200 active:bg-green-300 border border-green-200 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center font-medium px-6 py-3 text-base rounded-xl border-2 border-green-700 text-green-700 hover:bg-green-50 active:bg-green-100 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center font-medium px-6 py-3 text-base rounded-xl text-green-700 hover:bg-green-50 active:bg-green-100 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-prebook {
+    @apply inline-flex items-center justify-center font-medium px-6 py-3 text-base rounded-xl bg-amber-600 text-white hover:bg-amber-700 active:bg-amber-800 shadow-sm hover:shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .card-base {
+    @apply rounded-2xl transition-all duration-300;
+  }
+
+  .card-default {
+    @apply bg-white border border-green-100 shadow-sm;
+  }
+
+  .card-elevated {
+    @apply bg-white shadow-lg hover:shadow-xl;
+  }
+
+  .card-outlined {
+    @apply bg-white border-2 border-green-200 hover:border-green-300;
+  }
+
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/30 shadow-xl;
   }
 }
 
@@ -175,5 +216,31 @@
       opacity: 1;
       transform: scale(1);
     }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite 2s;
+  }
+
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite 4s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .animate-pulse-slow {
+    animation: pulseSlow 4s ease-in-out infinite;
+  }
+
+  @keyframes pulseSlow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
   }
 }
