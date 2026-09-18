@@ -1,4 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Greenova
+
+Greenova is a Next.js application for exploring plants, products, and building a custom growing kit.
+
+## Project Structure
+
+```text
+greenova/
+├── public/                         # Static files served from the site root
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── src/
+│   ├── app/                        # Next.js App Router entry files
+│   │   ├── favicon.ico             # Browser tab icon
+│   │   ├── globals.css             # Global styles and design tokens
+│   │   ├── layout.tsx              # Root layout and shared page shell
+│   │   └── page.tsx                # Home page composition
+│   ├── components/
+│   │   ├── kit-builder/            # Custom kit builder workflow
+│   │   │   ├── index.ts            # Kit builder exports
+│   │   │   ├── KitBuilder.tsx      # Kit builder container
+│   │   │   ├── KitBuilderContext.tsx # Kit builder state and context
+│   │   │   ├── KitBuilderSteps.tsx # Step navigation and step content
+│   │   │   ├── KitPreview.tsx      # Live kit preview
+│   │   │   └── Step6Review.tsx     # Final review step
+│   │   ├── sections/               # Home page sections
+│   │   │   ├── BrandStory.tsx
+│   │   │   ├── FAQ.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   ├── GrowingJourney.tsx
+│   │   │   ├── Hero.tsx
+│   │   │   ├── HomeFarm.tsx
+│   │   │   ├── HowItWorks.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── PlantSelector.tsx
+│   │   │   ├── Prebooking.tsx
+│   │   │   ├── Products.tsx
+│   │   │   ├── Trust.tsx
+│   │   │   ├── WhatsInside.tsx
+│   │   │   ├── WhyChooseUs.tsx
+│   │   │   └── index.ts            # Section exports
+│   │   └── ui/                     # Reusable interface primitives
+│   │       ├── Badge.tsx
+│   │       ├── Button.tsx
+│   │       ├── Card.tsx
+│   │       ├── Input.tsx
+│   │       ├── Modal.tsx
+│   │       ├── Toast.tsx
+│   │       └── index.ts            # UI component exports
+│   ├── data/                       # Static application data
+│   │   ├── plants.ts               # Plant catalog data
+│   │   └── products.ts             # Product catalog data
+│   ├── hooks/                      # Reserved for shared React hooks
+│   ├── lib/                        # Reserved for shared utilities
+│   └── types/
+│       └── index.ts                # Shared TypeScript types
+├── .gitignore                      # Git-ignored files and folders
+├── AGENTS.md                       # Repository-specific agent instructions
+├── CLAUDE.md                       # Reference to repository instructions
+├── eslint.config.mjs               # ESLint configuration
+├── next-env.d.ts                   # Next.js generated TypeScript declarations
+├── next.config.ts                  # Next.js configuration
+├── package.json                    # Scripts and dependencies
+├── package-lock.json               # Locked dependency versions
+├── postcss.config.mjs              # PostCSS configuration
+├── README.md                       # Project documentation
+└── tsconfig.json                   # TypeScript configuration
+```
+
+## Main Commands
+
+```bash
+npm run dev       # Start the development server
+npm run build     # Create a production build
+npm run start     # Start the production server
+npm run lint      # Run ESLint
+```
+
+The development site is available at [http://localhost:3000](http://localhost:3000).
 
 ## Getting Started
 
