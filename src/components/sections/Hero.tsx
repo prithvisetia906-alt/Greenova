@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui';
 import { ArrowRight, Sparkles, Leaf, Droplets, Sun, Shield, CheckCircle } from 'lucide-react';
@@ -57,6 +58,7 @@ function FloatingElement({ type, x, y, size, delay, reduce, hideOnMobile }: { ty
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
+  const router = useRouter();
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const bgY = useTransform(scrollYProgress, [0, 1], [0, 90]);
@@ -122,10 +124,14 @@ export function Hero() {
               transition={{ delay: 0.5, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
             >
-              <Button size="xl" rightIcon={<ArrowRight className="w-5 h-5" />}>
+              <Button
+                size="xl"
+                rightIcon={<ArrowRight className="w-5 h-5" />}
+                onClick={() => document.querySelector('#build-your-kit')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })}
+              >
                 Build Your Kit
               </Button>
-              <Button variant="outline" size="xl">
+              <Button variant="outline" size="xl" onClick={() => router.push('/prebook')}>
                 Prebook Now
               </Button>
             </motion.div>

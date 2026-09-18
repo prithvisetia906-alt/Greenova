@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui';
 import { Menu, X, Leaf, Sparkles } from 'lucide-react';
@@ -19,6 +20,9 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('#hero');
+  const pathname = usePathname();
+  const router = useRouter();
+  const isHome = pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,11 +49,21 @@ export function Navbar() {
   }, []);
 
   const scrollToSection = (href: string) => {
+    if (!isHome) {
+      router.push(`/${href}`);
+      setIsMobileMenuOpen(false);
+      return;
+    }
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
+  };
+
+  const goPrebook = () => {
+    setIsMobileMenuOpen(false);
+    router.push('/prebook');
   };
 
   return (
@@ -67,8 +81,8 @@ export function Navbar() {
       <nav className="container-main" aria-label="Main navigation">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <motion.a
-            href="#hero"
-            onClick={(e) => { e.preventDefault(); scrollToSection('#hero'); }}
+            href={isHome ? '#hero' : '/'}
+            onClick={(e) => { e.preventDefault(); if (isHome) scrollToSection('#hero'); else router.push('/'); }}
             className="flex items-center gap-2 text-green-deep font-display font-medium text-xl"
             aria-label="Greenova Home"
             whileHover={{ scale: 1.02 }}
@@ -120,7 +134,7 @@ export function Navbar() {
             <Button
               variant="prebook"
               size="md"
-              onClick={(e) => { e.preventDefault(); scrollToSection('#prebook'); }}
+              onClick={goPrebook}
               rightIcon={<Sparkles className="w-4 h-4" />}
             >
               Prebook
@@ -197,7 +211,7 @@ export function Navbar() {
                   size="lg"
                   fullWidth
                   rightIcon={<Sparkles className="w-4 h-4" />}
-                  onClick={() => scrollToSection('#prebook')}
+                  onClick={goPrebook}
                   className="w-full"
                 >
                   Prebook Now

@@ -13,7 +13,7 @@ import { GrowingJourney } from '@/components/sections/GrowingJourney';
 import { PlantSelector } from '@/components/sections/PlantSelector';
 import { Trust } from '@/components/sections/Trust';
 import { BrandStory } from '@/components/sections/BrandStory';
-import { Prebooking } from '@/components/sections/Prebooking';
+import { PrebookCTA } from '@/components/sections/PrebookCTA';
 import { FAQ } from '@/components/sections/FAQ';
 import { Footer } from '@/components/sections/Footer';
 
@@ -33,7 +33,7 @@ export default function Home() {
         <PlantSelector />
         <Trust />
         <BrandStory />
-        <Prebooking />
+        <PrebookCTA />
         <FAQ />
       </main>
       <Footer />

@@ -2,6 +2,7 @@ export { Hero } from './Hero';
 export { HowItWorks } from './HowItWorks';
 export { Products } from './Products';
 export { Prebooking } from './Prebooking';
+export { PrebookCTA } from './PrebookCTA';
 export { WhyChooseUs } from './WhyChooseUs';
 export { HomeFarm } from './HomeFarm';
 export { WhatsInside } from './WhatsInside';

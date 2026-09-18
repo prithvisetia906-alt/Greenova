@@ -10,17 +10,17 @@ import { useToast } from '@/components/ui/Toast';
 
 const footerLinks = {
   navigation: [
-    { label: 'Home', href: '#hero' },
-    { label: 'Build Your Kit', href: '#build-your-kit' },
-    { label: 'Products', href: '#products' },
-    { label: 'Prebook', href: '#prebook' },
-    { label: 'FAQ', href: '#faq' },
+    { label: 'Home', href: '/#hero' },
+    { label: 'Build Your Kit', href: '/#build-your-kit' },
+    { label: 'Products', href: '/#products' },
+    { label: 'Prebook', href: '/prebook' },
+    { label: 'FAQ', href: '/#faq' },
   ],
   company: [
-    { label: 'Our Story', href: '#brand-story' },
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Why Choose Us', href: '#why-choose-us' },
-    { label: 'Growing Guide', href: '#growing-journey' },
+    { label: 'Our Story', href: '/#brand-story' },
+    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'Why Choose Us', href: '/#why-choose-us' },
+    { label: 'Growing Guide', href: '/#growing-journey' },
   ],
   support: [
     { label: 'Contact Us', href: '#contact' },
